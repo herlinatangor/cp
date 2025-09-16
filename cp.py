@@ -239,6 +239,11 @@ def should_skip_host(hostname):
         hostname in ['localhost', '127.0.0.1', '0.0.0.0'],
         'example.com' in hostname,
         'test.com' in hostname and len(hostname) < 15,
+        # Skip non-ASCII hostnames that might cause issues
+        not all(ord(c) < 128 for c in hostname),
+        # Skip hostnames with obvious malformation
+        '..' in hostname,
+        hostname.startswith('.') or hostname.endswith('.'),
     ]
     
     return any(invalid_patterns)
@@ -619,34 +624,71 @@ def check_login(line, login_type, session=None, timeout=15, verify_ssl=False):
         return False
 
     except requests.exceptions.ConnectTimeout:
-        log_message(f"TIMEOUT - URL: {login_url} | Error: Connection timeout", "FAILED", login_type.upper())
+        log_message(f"TIMEOUT - URL: {login_url} | Error: Connection timeout after {timeout}s", "FAILED", login_type.upper())
+        update_stats(login_type, False)
+        stats['timeouts'] += 1
+        return False
+        
+    except requests.exceptions.ReadTimeout:
+        log_message(f"TIMEOUT - URL: {login_url} | Error: Read timeout after {timeout}s", "FAILED", login_type.upper())
+        update_stats(login_type, False)
+        stats['timeouts'] += 1
+        return False
+        
+    except requests.exceptions.Timeout:
+        log_message(f"TIMEOUT - URL: {login_url} | Error: Request timeout after {timeout}s", "FAILED", login_type.upper())
         update_stats(login_type, False)
         stats['timeouts'] += 1
         return False
         
     except requests.exceptions.SSLError as e:
-        log_message(f"SSL_ERROR - URL: {login_url} | Error: SSL verification failed", "FAILED", login_type.upper())
+        error_detail = str(e)
+        if "certificate verify failed" in error_detail:
+            log_message(f"SSL_ERROR - URL: {login_url} | Error: SSL certificate verification failed", "FAILED", login_type.upper())
+        elif "SSL: WRONG_VERSION_NUMBER" in error_detail:
+            log_message(f"SSL_ERROR - URL: {login_url} | Error: SSL version mismatch (not HTTPS?)", "FAILED", login_type.upper())
+        else:
+            log_message(f"SSL_ERROR - URL: {login_url} | Error: SSL error - {error_detail[:100]}", "FAILED", login_type.upper())
         update_stats(login_type, False)
         stats['errors'] += 1
         return False
         
     except requests.exceptions.ConnectionError as e:
-        if "getaddrinfo failed" in str(e) or "Failed to resolve" in str(e):
+        error_detail = str(e)
+        if "getaddrinfo failed" in error_detail or "Failed to resolve" in error_detail:
             log_message(f"DNS_ERROR - Host: {host} | Error: Hostname resolution failed", "FAILED", login_type.upper())
+        elif "Connection refused" in error_detail:
+            log_message(f"CONNECTION_ERROR - URL: {login_url} | Error: Connection refused (port closed)", "FAILED", login_type.upper())
+        elif "Network is unreachable" in error_detail:
+            log_message(f"NETWORK_ERROR - URL: {login_url} | Error: Network unreachable", "FAILED", login_type.upper())
         else:
-            log_message(f"CONNECTION_ERROR - URL: {login_url} | Error: Connection failed - {str(e)}", "FAILED", login_type.upper())
+            log_message(f"CONNECTION_ERROR - URL: {login_url} | Error: {error_detail[:100]}", "FAILED", login_type.upper())
+        update_stats(login_type, False)
+        stats['errors'] += 1
+        return False
+
+    except requests.exceptions.TooManyRedirects:
+        log_message(f"REDIRECT_ERROR - URL: {login_url} | Error: Too many redirects", "FAILED", login_type.upper())
         update_stats(login_type, False)
         stats['errors'] += 1
         return False
 
     except requests.exceptions.RequestException as e:
-        log_message(f"REQUEST_ERROR - URL: {login_url} | Error: {str(e)}", "FAILED", login_type.upper())
+        error_detail = str(e)
+        log_message(f"REQUEST_ERROR - URL: {login_url} | Error: {error_detail[:100]}", "FAILED", login_type.upper())
+        update_stats(login_type, False)
+        stats['errors'] += 1
+        return False
+        
+    except UnicodeDecodeError as e:
+        log_message(f"ENCODING_ERROR - URL: {login_url} | Error: Response encoding issue", "FAILED", login_type.upper())
         update_stats(login_type, False)
         stats['errors'] += 1
         return False
         
     except Exception as e:
-        log_message(f"ERROR - URL: {login_url} | User: {username} | Pass: {password} | Error: {str(e)}", "ERROR", login_type.upper())
+        error_detail = str(e)
+        log_message(f"UNEXPECTED_ERROR - URL: {login_url} | User: {username} | Error: {error_detail[:100]}", "ERROR", login_type.upper())
         update_stats(login_type, False)
         stats['errors'] += 1
         return False
@@ -754,8 +796,9 @@ def check_directadmin(line, session=None, timeout=15, verify_ssl=False):
 
 
 def save_structured_results(output_format, filename=None):
-    """Save results in structured formats (JSON/CSV)"""
+    """Save results in structured formats (JSON/CSV) with resumability support"""
     if not results_data:
+        log_message("No results to save", "INFO")
         return
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -764,30 +807,62 @@ def save_structured_results(output_format, filename=None):
         filename = filename or f'output/results_{timestamp}.json'
         os.makedirs('output', exist_ok=True)
         
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump({
-                'metadata': {
-                    'timestamp': datetime.now().isoformat(),
-                    'total_tested': stats['total_tested'],
-                    'statistics': stats
-                },
-                'results': results_data
-            }, f, indent=2, ensure_ascii=False)
+        # Include detailed metadata for resumability
+        output_data = {
+            'metadata': {
+                'version': '2.0',
+                'timestamp': datetime.now().isoformat(),
+                'total_tested': stats['total_tested'],
+                'total_successful': sum(stats[f'{service}_success'] for service in ['ftp', 'ssh', 'cpanel', 'whm', 'directadmin']),
+                'total_tfa_required': sum(stats[f'{service}_tfa'] for service in ['ftp', 'ssh', 'cpanel', 'whm', 'directadmin']),
+                'statistics': stats,
+                'resumable': True
+            },
+            'results': results_data
+        }
         
-        log_message(f"Results saved to JSON: {filename}", "INFO")
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(output_data, f, indent=2, ensure_ascii=False)
+        
+        log_message(f"Results saved to JSON: {filename} ({len(results_data)} entries)", "INFO")
         
     elif output_format.lower() == 'csv':
         filename = filename or f'output/results_{timestamp}.csv'
         os.makedirs('output', exist_ok=True)
         
         if results_data:
-            fieldnames = results_data[0].keys()
+            # Add enhanced fields for CSV
+            enhanced_data = []
+            for result in results_data:
+                enhanced_result = result.copy()
+                enhanced_result['success_rate'] = 'Success' if result['status'] in ['success', 'tfa_required'] else 'Failed'
+                enhanced_result['has_session'] = 'Yes' if result.get('session_id') else 'No'
+                enhanced_data.append(enhanced_result)
+            
+            fieldnames = enhanced_data[0].keys()
             with open(filename, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
-                writer.writerows(results_data)
+                writer.writerows(enhanced_data)
         
-        log_message(f"Results saved to CSV: {filename}", "INFO")
+        log_message(f"Results saved to CSV: {filename} ({len(results_data)} entries)", "INFO")
+
+def load_previous_results(filename):
+    """Load previous results for resume functionality"""
+    if not os.path.exists(filename):
+        return []
+    
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if isinstance(data, dict) and 'results' in data:
+                return data['results']
+            elif isinstance(data, list):
+                return data
+    except Exception as e:
+        log_message(f"Error loading previous results: {e}", "ERROR")
+    
+    return []
 
 def print_stats():
     """Enhanced statistics with TFA tracking and error metrics"""
@@ -943,7 +1018,12 @@ Examples:
         # Setup shared session for web services
         web_session = setup_session(args.timeout, not args.no_ssl_verify, args.max_retries)
         
-        # Execute checks with enhanced thread pool
+        # Execute checks with enhanced thread pool and progress tracking
+        total_tasks = len(list_data) * len(services_to_test)
+        completed_tasks = 0
+        
+        log_message(f"Queuing {total_tasks} total tasks across {len(services_to_test)} services", "INFO")
+        
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
             futures = []
             
@@ -953,24 +1033,34 @@ Examples:
                 
                 # Submit tasks for each enabled service
                 if 'ftp' in services_to_test:
-                    futures.append(executor.submit(check_ftp, line, args.timeout))
+                    futures.append(('ftp', executor.submit(check_ftp, line, args.timeout)))
                 if 'ssh' in services_to_test:
-                    futures.append(executor.submit(check_ssh, line, args.timeout))
+                    futures.append(('ssh', executor.submit(check_ssh, line, args.timeout)))
                 if 'cpanel' in services_to_test:
-                    futures.append(executor.submit(check_login, line, 'cpanel', web_session, args.timeout, not args.no_ssl_verify))
+                    futures.append(('cpanel', executor.submit(check_login, line, 'cpanel', web_session, args.timeout, not args.no_ssl_verify)))
                 if 'whm' in services_to_test:
-                    futures.append(executor.submit(check_login, line, 'whm', web_session, args.timeout, not args.no_ssl_verify))
+                    futures.append(('whm', executor.submit(check_login, line, 'whm', web_session, args.timeout, not args.no_ssl_verify)))
                 if 'directadmin' in services_to_test:
-                    futures.append(executor.submit(check_directadmin, line, web_session, args.timeout, not args.no_ssl_verify))
+                    futures.append(('directadmin', executor.submit(check_directadmin, line, web_session, args.timeout, not args.no_ssl_verify)))
             
             # Wait for completion with progress tracking
-            for future in concurrent.futures.as_completed(futures):
+            log_message(f"Processing {len(futures)} tasks...", "INFO")
+            
+            for future_info in concurrent.futures.as_completed([f for s, f in futures]):
                 if shutdown_requested:
                     break
                 try:
-                    future.result()
+                    future_info.result()
+                    completed_tasks += 1
+                    
+                    # Log progress every 25 tasks or major milestones
+                    if completed_tasks % 25 == 0 or completed_tasks in [1, 10, 50, 100]:
+                        progress_pct = (completed_tasks / len(futures)) * 100
+                        log_message(f"Progress: {completed_tasks}/{len(futures)} tasks completed ({progress_pct:.1f}%)", "INFO")
+                        
                 except Exception as e:
                     log_message(f"Task execution error: {e}", "ERROR")
+                    completed_tasks += 1
         
         # Print final statistics
         log_message("", "INFO")
