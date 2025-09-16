@@ -1,0 +1,60 @@
+=== ENHANCED CP CREDENTIAL CHECKER LOG ===
+Version: 2.0 (Improved with Analysis Insights)
+Start Time: 2025-09-16 09:39:27
+Log File: test_run.log
+Services: cpanel
+Threads: 5
+Timeout: 10s
+SSL Verify: True
+================================================================================
+
+[2025-09-16 09:39:27] [INFO]  Enhanced logging enabled - Results will be saved to: test_run.log
+[2025-09-16 09:39:27] [INFO]  Loading credential file: cplist.txt
+[2025-09-16 09:39:27] [INFO]  Loaded 23 credentials for testing
+[2025-09-16 09:39:27] [INFO]  Pre-filtering complete: 23 valid credentials from 23 total
+[2025-09-16 09:39:27] [INFO]  Using 5 threads for testing
+[2025-09-16 09:39:27] [INFO]  Timeout set to 10 seconds
+[2025-09-16 09:39:27] [INFO]  Testing services: cpanel
+[2025-09-16 09:39:27] [INFO]  Starting enhanced credential validation...
+[2025-09-16 09:39:27] [INFO]  
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: safetconsult.com:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: vmdm01.digitalpacific.com.au:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: host51.registrar-servers.com:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: allstarsnews.ai:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: steadydime.com:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: parked05.1-grid.com:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: adierandco.com:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: lawu.iixcp.rumahweb.net:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: demo.cpanel.com:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: demo.rvskin.com:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: demo.rvskin.com:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: weberneurologista.com:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: hari.fr.planethoster.net:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: panel.kemenag.go.id:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: tea.o2switch.net:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: codeandblog.com:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: clean.o2switch.net:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: demo2.rvskins.com:2083
+[2025-09-16 09:39:27] [ERROR]  Invalid hostname: panel.kemenag.go.id:2083
+[2025-09-16 09:39:33] [FAILED] [CPANEL] DNS_ERROR - Host: dpmptsp.riau.go.id | Error: Hostname resolution failed
+[2025-09-16 09:39:33] [FAILED] [CPANEL] DNS_ERROR - Host: vmcp90.digitalpacific.com.au | Error: Hostname resolution failed
+[2025-09-16 09:39:33] [FAILED] [CPANEL] DNS_ERROR - Host: demo.cpanel.net | Error: Hostname resolution failed
+[2025-09-16 09:39:33] [FAILED] [CPANEL] DNS_ERROR - Host: lserver5.atakhosting.co | Error: Hostname resolution failed
+[2025-09-16 09:39:33] [INFO]  
+[2025-09-16 09:39:33] [INFO]  Testing completed successfully!
+[2025-09-16 09:39:33] [INFO]  ================================================================================
+[2025-09-16 09:39:33] [INFO]  ENHANCED STATISTICS SUMMARY
+[2025-09-16 09:39:33] [INFO]  ================================================================================
+[2025-09-16 09:39:33] [INFO]  Total credentials tested: 4
+[2025-09-16 09:39:33] [INFO]  Errors encountered: 4
+[2025-09-16 09:39:33] [INFO]  Timeouts: 0
+[2025-09-16 09:39:33] [INFO]  
+[2025-09-16 09:39:33] [INFO]  CPANEL Results:
+[2025-09-16 09:39:33] [INFO]    ✓ Successful: 0 (0.0%)
+[2025-09-16 09:39:33] [INFO]    ✗ Failed: 4
+[2025-09-16 09:39:33] [INFO]    🔐 TFA Required: 0
+[2025-09-16 09:39:33] [INFO]    📊 Total: 4
+[2025-09-16 09:39:33] [INFO]  
+[2025-09-16 09:39:33] [INFO]  Overall Valid Credentials: 0/4 (0.00%)
+[2025-09-16 09:39:33] [INFO]  Success Rate (including TFA): 0.00%
+[2025-09-16 09:39:33] [INFO]  ================================================================================

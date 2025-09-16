@@ -1,0 +1,54 @@
+=== ENHANCED CP CREDENTIAL CHECKER LOG ===
+Version: 2.0 (Improved with Analysis Insights)
+Start Time: 2025-09-16 09:43:16
+Log File: parsing_test.log
+Services: ftp,ssh,cpanel,whm,directadmin
+Threads: 50
+Timeout: 15s
+SSL Verify: True
+================================================================================
+
+[2025-09-16 09:43:16] [INFO]  Enhanced logging enabled - Results will be saved to: parsing_test.log
+[2025-09-16 09:43:16] [INFO]  Loading credential file: cplist.txt
+[2025-09-16 09:43:16] [INFO]  Loaded 23 credentials for testing
+[2025-09-16 09:43:16] [INFO]  Pre-filtering complete: 23 valid credentials from 23 total
+[2025-09-16 09:43:16] [INFO]  Using 50 threads for testing
+[2025-09-16 09:43:16] [INFO]  Timeout set to 15 seconds
+[2025-09-16 09:43:16] [INFO]  Testing services: ftp, ssh, cpanel, whm, directadmin
+[2025-09-16 09:43:16] [INFO]  Running in TEST MODE - validating parsing only
+[2025-09-16 09:43:16] [INFO]  
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: safetconsult.com:2083 | User: safetconsult | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: vmdm01.digitalpacific.com.au:2083 | User: gnorrisc | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: dpmptsp.riau.go.id | User: dpmptsparugo527 | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: vmcp90.digitalpacific.com.au | User: splashco | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: host51.registrar-servers.com:2083 | User: nla | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: lserver5.atakhosting.co | User: acc165okumuslar | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: allstarsnews.ai:2083 | User: npk2xcustky6 | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: steadydime.com:2083 | User: steadydime1 | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: parked05.1-grid.com:2083 | User: thehanh2 | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: adierandco.com:2083 | User: adierand | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: lawu.iixcp.rumahweb.net:2083 | User: smkc7882 | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: demo.cpanel.com:2083 | User: democom | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: demo.rvskin.com:2083 | User: rvsiteb | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: demo.rvskin.com:2083 | User: reclient | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: weberneurologista.com:2083 | User: webern21 | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: demo.cpanel.net | User: democom | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: hari.fr.planethoster.net:2083 | User: sylvain | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: panel.kemenag.go.id:2083 | User: suratkln | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: tea.o2switch.net:2083 | User: o2cpanel | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: codeandblog.com:2083 | User: codeandblog | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: clean.o2switch.net:2083 | User: o2cpanel | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: demo2.rvskins.com:2083 | User: reclient | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [SUCCESS] [TEST] PARSED OK - Host: panel.kemenag.go.id:2083 | User: bdkmksar | Pass: [HIDDEN]
+[2025-09-16 09:43:16] [INFO]  
+[2025-09-16 09:43:16] [INFO]  Testing completed successfully!
+[2025-09-16 09:43:16] [INFO]  ================================================================================
+[2025-09-16 09:43:16] [INFO]  ENHANCED STATISTICS SUMMARY
+[2025-09-16 09:43:16] [INFO]  ================================================================================
+[2025-09-16 09:43:16] [INFO]  Total credentials tested: 23
+[2025-09-16 09:43:16] [INFO]  Errors encountered: 0
+[2025-09-16 09:43:16] [INFO]  Timeouts: 0
+[2025-09-16 09:43:16] [INFO]  
+[2025-09-16 09:43:16] [INFO]  Overall Valid Credentials: 0/23 (0.00%)
+[2025-09-16 09:43:16] [INFO]  Success Rate (including TFA): 0.00%
+[2025-09-16 09:43:16] [INFO]  ================================================================================
