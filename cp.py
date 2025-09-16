@@ -971,6 +971,9 @@ Examples:
                     host, username, password = credentials
                     log_message(f"PARSED OK - Host: {host} | User: {username} | Pass: [HIDDEN]", "SUCCESS", "TEST")
                     stats['total_tested'] += 1
+                    
+                    # Save parsed result for structured output
+                    save_result('test', host, username, password, 'parsed', None, False)
                 else:
                     log_message(f"PARSE FAILED - Line: {line}", "FAILED", "TEST")
                     stats['errors'] += 1
