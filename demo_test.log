@@ -1,0 +1,40 @@
+=== ENHANCED CP CREDENTIAL CHECKER LOG ===
+Version: 2.0 (Improved with Analysis Insights)
+Start Time: 2025-09-16 09:46:25
+Log File: demo_test.log
+Services: cpanel
+Threads: 2
+Timeout: 15s
+SSL Verify: True
+================================================================================
+
+[2025-09-16 09:46:25] [INFO]  Enhanced logging enabled - Results will be saved to: demo_test.log
+[2025-09-16 09:46:25] [INFO]  Loading credential file: known_demo.txt
+[2025-09-16 09:46:25] [INFO]  Loaded 3 credentials for testing
+[2025-09-16 09:46:25] [INFO]  Pre-filtering complete: 3 valid credentials from 3 total
+[2025-09-16 09:46:25] [INFO]  Using 2 threads for testing
+[2025-09-16 09:46:25] [INFO]  Timeout set to 15 seconds
+[2025-09-16 09:46:25] [INFO]  Testing services: cpanel
+[2025-09-16 09:46:25] [INFO]  Starting enhanced credential validation...
+[2025-09-16 09:46:25] [INFO]  
+[2025-09-16 09:46:31] [FAILED] [CPANEL] DNS_ERROR - Host: tea.o2switch.net:2083 | Error: Hostname resolution failed
+[2025-09-16 09:46:31] [FAILED] [CPANEL] DNS_ERROR - Host: clean.o2switch.net:2083 | Error: Hostname resolution failed
+[2025-09-16 09:46:37] [FAILED] [CPANEL] DNS_ERROR - Host: panel.kemenag.go.id:2083 | Error: Hostname resolution failed
+[2025-09-16 09:46:37] [INFO]  
+[2025-09-16 09:46:37] [INFO]  Testing completed successfully!
+[2025-09-16 09:46:37] [INFO]  ================================================================================
+[2025-09-16 09:46:37] [INFO]  ENHANCED STATISTICS SUMMARY
+[2025-09-16 09:46:37] [INFO]  ================================================================================
+[2025-09-16 09:46:37] [INFO]  Total credentials tested: 3
+[2025-09-16 09:46:37] [INFO]  Errors encountered: 3
+[2025-09-16 09:46:37] [INFO]  Timeouts: 0
+[2025-09-16 09:46:37] [INFO]  
+[2025-09-16 09:46:37] [INFO]  CPANEL Results:
+[2025-09-16 09:46:37] [INFO]    ✓ Successful: 0 (0.0%)
+[2025-09-16 09:46:37] [INFO]    ✗ Failed: 3
+[2025-09-16 09:46:37] [INFO]    🔐 TFA Required: 0
+[2025-09-16 09:46:37] [INFO]    📊 Total: 3
+[2025-09-16 09:46:37] [INFO]  
+[2025-09-16 09:46:37] [INFO]  Overall Valid Credentials: 0/3 (0.00%)
+[2025-09-16 09:46:37] [INFO]  Success Rate (including TFA): 0.00%
+[2025-09-16 09:46:37] [INFO]  ================================================================================

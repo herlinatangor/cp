@@ -1,0 +1,60 @@
+=== ENHANCED CP CREDENTIAL CHECKER LOG ===
+Version: 2.0 (Improved with Analysis Insights)
+Start Time: 2025-09-16 09:41:44
+Log File: test_improved.log
+Services: cpanel
+Threads: 3
+Timeout: 10s
+SSL Verify: True
+================================================================================
+
+[2025-09-16 09:41:44] [INFO]  Enhanced logging enabled - Results will be saved to: test_improved.log
+[2025-09-16 09:41:44] [INFO]  Loading credential file: cplist.txt
+[2025-09-16 09:41:44] [INFO]  Loaded 23 credentials for testing
+[2025-09-16 09:41:44] [INFO]  Pre-filtering complete: 23 valid credentials from 23 total
+[2025-09-16 09:41:44] [INFO]  Using 3 threads for testing
+[2025-09-16 09:41:44] [INFO]  Timeout set to 10 seconds
+[2025-09-16 09:41:44] [INFO]  Testing services: cpanel
+[2025-09-16 09:41:44] [INFO]  Starting enhanced credential validation...
+[2025-09-16 09:41:44] [INFO]  
+[2025-09-16 09:41:50] [FAILED] [CPANEL] DNS_ERROR - Host: safetconsult.com:2083 | Error: Hostname resolution failed
+[2025-09-16 09:41:50] [FAILED] [CPANEL] DNS_ERROR - Host: dpmptsp.riau.go.id | Error: Hostname resolution failed
+[2025-09-16 09:41:50] [FAILED] [CPANEL] DNS_ERROR - Host: vmdm01.digitalpacific.com.au:2083 | Error: Hostname resolution failed
+[2025-09-16 09:41:56] [FAILED] [CPANEL] DNS_ERROR - Host: vmcp90.digitalpacific.com.au | Error: Hostname resolution failed
+[2025-09-16 09:41:56] [FAILED] [CPANEL] DNS_ERROR - Host: lserver5.atakhosting.co | Error: Hostname resolution failed
+[2025-09-16 09:41:56] [FAILED] [CPANEL] DNS_ERROR - Host: host51.registrar-servers.com:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:02] [FAILED] [CPANEL] DNS_ERROR - Host: allstarsnews.ai:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:02] [FAILED] [CPANEL] DNS_ERROR - Host: steadydime.com:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:02] [FAILED] [CPANEL] DNS_ERROR - Host: parked05.1-grid.com:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:08] [FAILED] [CPANEL] DNS_ERROR - Host: adierandco.com:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:08] [FAILED] [CPANEL] DNS_ERROR - Host: lawu.iixcp.rumahweb.net:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:08] [FAILED] [CPANEL] DNS_ERROR - Host: demo.cpanel.com:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:14] [FAILED] [CPANEL] DNS_ERROR - Host: demo.rvskin.com:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:14] [FAILED] [CPANEL] DNS_ERROR - Host: demo.rvskin.com:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:14] [FAILED] [CPANEL] DNS_ERROR - Host: weberneurologista.com:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:20] [FAILED] [CPANEL] DNS_ERROR - Host: demo.cpanel.net | Error: Hostname resolution failed
+[2025-09-16 09:42:20] [FAILED] [CPANEL] DNS_ERROR - Host: hari.fr.planethoster.net:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:20] [FAILED] [CPANEL] DNS_ERROR - Host: panel.kemenag.go.id:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:26] [FAILED] [CPANEL] DNS_ERROR - Host: tea.o2switch.net:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:26] [FAILED] [CPANEL] DNS_ERROR - Host: codeandblog.com:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:26] [FAILED] [CPANEL] DNS_ERROR - Host: clean.o2switch.net:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:32] [FAILED] [CPANEL] DNS_ERROR - Host: demo2.rvskins.com:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:32] [FAILED] [CPANEL] DNS_ERROR - Host: panel.kemenag.go.id:2083 | Error: Hostname resolution failed
+[2025-09-16 09:42:32] [INFO]  
+[2025-09-16 09:42:32] [INFO]  Testing completed successfully!
+[2025-09-16 09:42:32] [INFO]  ================================================================================
+[2025-09-16 09:42:32] [INFO]  ENHANCED STATISTICS SUMMARY
+[2025-09-16 09:42:32] [INFO]  ================================================================================
+[2025-09-16 09:42:32] [INFO]  Total credentials tested: 23
+[2025-09-16 09:42:32] [INFO]  Errors encountered: 23
+[2025-09-16 09:42:32] [INFO]  Timeouts: 0
+[2025-09-16 09:42:32] [INFO]  
+[2025-09-16 09:42:32] [INFO]  CPANEL Results:
+[2025-09-16 09:42:32] [INFO]    ✓ Successful: 0 (0.0%)
+[2025-09-16 09:42:32] [INFO]    ✗ Failed: 23
+[2025-09-16 09:42:32] [INFO]    🔐 TFA Required: 0
+[2025-09-16 09:42:32] [INFO]    📊 Total: 23
+[2025-09-16 09:42:32] [INFO]  
+[2025-09-16 09:42:32] [INFO]  Overall Valid Credentials: 0/23 (0.00%)
+[2025-09-16 09:42:32] [INFO]  Success Rate (including TFA): 0.00%
+[2025-09-16 09:42:32] [INFO]  ================================================================================

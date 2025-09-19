@@ -1,0 +1,258 @@
+{
+  "metadata": {
+    "timestamp": "2025-09-16T09:45:47.977324",
+    "total_tested": 23,
+    "statistics": {
+      "ftp_success": 0,
+      "ftp_failed": 0,
+      "ftp_tfa": 0,
+      "ssh_success": 0,
+      "ssh_failed": 0,
+      "ssh_tfa": 0,
+      "cpanel_success": 0,
+      "cpanel_failed": 0,
+      "cpanel_tfa": 0,
+      "whm_success": 0,
+      "whm_failed": 0,
+      "whm_tfa": 0,
+      "directadmin_success": 0,
+      "directadmin_failed": 0,
+      "directadmin_tfa": 0,
+      "total_tested": 23,
+      "errors": 0,
+      "timeouts": 0
+    }
+  },
+  "results": [
+    {
+      "timestamp": "2025-09-16T09:45:47.976654",
+      "service": "test",
+      "host": "safetconsult.com:2083",
+      "username": "safetconsult",
+      "password": "Dzyn4le$S12mx",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.976765",
+      "service": "test",
+      "host": "vmdm01.digitalpacific.com.au:2083",
+      "username": "gnorrisc",
+      "password": "6eE430yhCu",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.976802",
+      "service": "test",
+      "host": "dpmptsp.riau.go.id",
+      "username": "dpmptsparugo527",
+      "password": "Allahku4ku@",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.976827",
+      "service": "test",
+      "host": "vmcp90.digitalpacific.com.au",
+      "username": "splashco",
+      "password": "F4GO0]ek#Avl98",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.976850",
+      "service": "test",
+      "host": "host51.registrar-servers.com:2083",
+      "username": "nla",
+      "password": "Eleven@11+2019",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.976871",
+      "service": "test",
+      "host": "lserver5.atakhosting.co",
+      "username": "acc165okumuslar",
+      "password": "EXmwB1-(7V",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.976890",
+      "service": "test",
+      "host": "allstarsnews.ai:2083",
+      "username": "npk2xcustky6",
+      "password": "a@8%NZt4IMCL",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.976908",
+      "service": "test",
+      "host": "steadydime.com:2083",
+      "username": "steadydime1",
+      "password": "Salesmeeting1$",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.976927",
+      "service": "test",
+      "host": "parked05.1-grid.com:2083",
+      "username": "thehanh2",
+      "password": "t8Wh2xP4n8",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.976945",
+      "service": "test",
+      "host": "adierandco.com:2083",
+      "username": "adierand",
+      "password": "3BwP4LYp5]o8[a",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.976964",
+      "service": "test",
+      "host": "lawu.iixcp.rumahweb.net:2083",
+      "username": "smkc7882",
+      "password": "7ZFPdg7u7pWg94",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.976988",
+      "service": "test",
+      "host": "demo.cpanel.com:2083",
+      "username": "democom",
+      "password": "DemoCoA5620",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.977008",
+      "service": "test",
+      "host": "demo.rvskin.com:2083",
+      "username": "rvsiteb",
+      "password": "JMTA0d5xkpIa",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.977026",
+      "service": "test",
+      "host": "demo.rvskin.com:2083",
+      "username": "reclient",
+      "password": "demo2",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.977045",
+      "service": "test",
+      "host": "weberneurologista.com:2083",
+      "username": "webern21",
+      "password": "0Nf9x92moH",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.977066",
+      "service": "test",
+      "host": "demo.cpanel.net",
+      "username": "democom",
+      "password": "DemoCoA5620",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.977086",
+      "service": "test",
+      "host": "hari.fr.planethoster.net:2083",
+      "username": "sylvain",
+      "password": "@Skmlyaae24142019",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.977104",
+      "service": "test",
+      "host": "panel.kemenag.go.id:2083",
+      "username": "suratkln",
+      "password": "sagiono1976",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.977122",
+      "service": "test",
+      "host": "tea.o2switch.net:2083",
+      "username": "o2cpanel",
+      "password": "testezmoi",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.977144",
+      "service": "test",
+      "host": "codeandblog.com:2083",
+      "username": "codeandblog",
+      "password": "%9q(77Fe^Leq",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.977161",
+      "service": "test",
+      "host": "clean.o2switch.net:2083",
+      "username": "o2cpanel",
+      "password": "testezmoi",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.977178",
+      "service": "test",
+      "host": "demo2.rvskins.com:2083",
+      "username": "reclient",
+      "password": "demo2",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    },
+    {
+      "timestamp": "2025-09-16T09:45:47.977195",
+      "service": "test",
+      "host": "panel.kemenag.go.id:2083",
+      "username": "bdkmksar",
+      "password": "z]MijFmLjve4",
+      "status": "parsed",
+      "session_id": null,
+      "tfa_required": false
+    }
+  ]
+}

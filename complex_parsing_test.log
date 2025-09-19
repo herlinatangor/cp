@@ -1,0 +1,80 @@
+=== ENHANCED CP CREDENTIAL CHECKER LOG ===
+Version: 2.0 (Improved with Analysis Insights)
+Start Time: 2025-09-16 09:43:34
+Log File: complex_parsing_test.log
+Services: ftp,ssh,cpanel,whm,directadmin
+Threads: 50
+Timeout: 15s
+SSL Verify: True
+================================================================================
+
+[2025-09-16 09:43:34] [INFO]  Enhanced logging enabled - Results will be saved to: complex_parsing_test.log
+[2025-09-16 09:43:34] [INFO]  Loading credential file: test_complex.txt
+[2025-09-16 09:43:34] [INFO]  Loaded 49 credentials for testing
+[2025-09-16 09:43:34] [INFO]  Pre-filtering complete: 49 valid credentials from 49 total
+[2025-09-16 09:43:34] [INFO]  Using 50 threads for testing
+[2025-09-16 09:43:34] [INFO]  Timeout set to 15 seconds
+[2025-09-16 09:43:34] [INFO]  Testing services: ftp, ssh, cpanel, whm, directadmin
+[2025-09-16 09:43:34] [INFO]  Running in TEST MODE - validating parsing only
+[2025-09-16 09:43:34] [INFO]  
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbangladesh.com:2083 | User: softaysn | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbangladesh.com:2083 | User: soykot | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbangladesh.com:2083 | User: support | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbangladesh.com:2083 | User: tanvirja | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbangladesh.com:2083 | User: thunderweblab | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbangladesh.com:2083 | User: webdevra | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbangladesh.com:2083 | User: xenonco1 | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbangladesh.com:2083 | User: xingdaco | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbangladesh.com | User: 2083msbdt | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbangladesh.com | User: 2083 | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: admin | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: admin | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: admin | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: bicente3 | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: deltagam | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: gruasanignacio | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: gruasanignacio | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: gruasanignacio | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: keatonas | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: keatonas | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: mauro0070202 | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: mauro007 | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: pablo.rojas.v@hotmail.com | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: pablo.rojas.v@hotmail.com | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: pablorojasvergara233 | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: pablorojasvergara23@gmail.com | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: pablorojasvergara23@gmail.com | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: panderetasbiobio | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: panderetasbiobio | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: panderetasbiobio | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: panderetasbiobio | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: tecnorep | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: tecnorep | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: wordpress2 | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: wordpress2 | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: wordpress | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: wordpress | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com:2083 | User: wordpress | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com | User: 2083 | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingbiobio.com | User: 2083 | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingdunyam.net:2083 diamondr | User: 4[K4n | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingdunyam.net:2083cpsess0078716514 | User: info | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingdunyam.net:2083 | User: 2313353data@turk.net | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingdunyam.net:2083 | User: 4[K4n | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingdunyam.net:2083 | User: EMPTY | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingdunyam.net:2083 | User: HasancanYT | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingdunyam.net:2083 | User: Kullanici | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingdunyam.net:2083 | User: Surmeli | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [SUCCESS] [TEST] PARSED OK - Host: server3.hostingdunyam.net:2083 | User: accountlive | Pass: [HIDDEN]
+[2025-09-16 09:43:34] [INFO]  
+[2025-09-16 09:43:34] [INFO]  Testing completed successfully!
+[2025-09-16 09:43:34] [INFO]  ================================================================================
+[2025-09-16 09:43:34] [INFO]  ENHANCED STATISTICS SUMMARY
+[2025-09-16 09:43:34] [INFO]  ================================================================================
+[2025-09-16 09:43:34] [INFO]  Total credentials tested: 49
+[2025-09-16 09:43:34] [INFO]  Errors encountered: 0
+[2025-09-16 09:43:34] [INFO]  Timeouts: 0
+[2025-09-16 09:43:34] [INFO]  
+[2025-09-16 09:43:34] [INFO]  Overall Valid Credentials: 0/49 (0.00%)
+[2025-09-16 09:43:34] [INFO]  Success Rate (including TFA): 0.00%
+[2025-09-16 09:43:34] [INFO]  ================================================================================

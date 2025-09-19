@@ -1,0 +1,3 @@
+clean.o2switch.net:2083|o2cpanel|testezmoi
+tea.o2switch.net:2083|o2cpanel|testezmoi
+panel.kemenag.go.id:2083|suratkln|sagiono1976
